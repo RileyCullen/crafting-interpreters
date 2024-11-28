@@ -9,6 +9,8 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class Lox {
+    private static boolean hadError = false;
+
     public static void main(String[] args) throws IOException{
         Lox.handleStartup(args);
     }
@@ -34,6 +36,7 @@ public class Lox {
     private static void runFile(String path) throws IOException {
         byte[] bytes = Files.readAllBytes(Paths.get(path));
         run(new String(bytes, Charset.defaultCharset()));
+        if (hadError) System.exit(65);
     }
 
     /**
@@ -50,18 +53,27 @@ public class Lox {
                 break;
             }
             run(line);
+            // Reset hadError to not kill entire session
+            hadError = false;
         }
     }
 
     private static void run(String source) {
-        System.out.println("Testing Java");
-        // Scanner scanner = new Scanner(source);
-        // List<Token> tokens = scanner.scanTokens();
+        Scanner scanner = new Scanner(source);
+        List<Token> tokens = scanner.scanTokens();
 
         // Print tokens
-        // for (Token token : tokens) {
-            // System.out.println(token);
-        // }
-    } 
+        for (Token token : tokens) {
+            System.out.println(token);
+        }
+    }
+
+    public static void error(int line, String message) {
+        report(line, "", message);
+    }
+
+    private static void report(int line, String where, String message) {
+        System.err.println("[line " + line "] Error " + where ": " + message);
+    }
 }
 
